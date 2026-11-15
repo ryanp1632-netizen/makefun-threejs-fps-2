@@ -96,7 +96,7 @@ export function buildWorld(scene, tex) {
   scene.add(group);
   addSigns(scene);
   addSiteMarks(scene);
-  const lamps = addLamps(scene, tex);
+  const lamps = addLamps(scene);
   addSkyline(scene, tex);
   return { group, lamps };
 }
@@ -133,13 +133,9 @@ function addSiteMarks(scene) {
   }
 }
 
-// Sodium lamps on brackets, mounted on the nearest wall to each lamp cell. Their light is baked:
-// a glowing bulb, a halo sprite and an additive pool on the floor below, so a dozen lamps cost
-// no per-pixel lighting (real point lights would multiply the shading cost of every surface).
-function addLamps(scene, tex) {
-  const haloMat = new THREE.SpriteMaterial({ map: tex.puff, color: PALETTE.sodium, blending: THREE.AdditiveBlending, transparent: true, opacity: 0.55, depthWrite: false });
-  const poolMat = new THREE.MeshBasicMaterial({ map: tex.puff, color: PALETTE.sodium, blending: THREE.AdditiveBlending, transparent: true, opacity: 0.28, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 });
-  const poolGeo = new THREE.PlaneGeometry(7, 7).rotateX(-Math.PI / 2);
+// Sodium lamps on brackets, mounted on the nearest wall to each lamp cell, each a warm point
+// light that pools on the lane below it.
+function addLamps(scene) {
   const fixture = new THREE.MeshStandardMaterial({ color: 0x2a2c30, roughness: 0.6, metalness: 0.6 });
   const bulb = new THREE.MeshBasicMaterial({ color: PALETTE.sodium });
   const arm = new THREE.BoxGeometry(0.12, 0.12, 0.9);
@@ -162,14 +158,10 @@ function addLamps(scene, tex) {
     const a = new THREE.Mesh(arm, fixture); a.position.z = 0.45; g.add(a);
     const h = new THREE.Mesh(head, fixture); h.position.set(0, -0.05, 0.95); g.add(h);
     const b = new THREE.Mesh(glow, bulb); b.position.set(0, -0.15, 0.95); g.add(b);
-    const halo = new THREE.Sprite(haloMat);
-    halo.position.set(0, -0.2, 0.95);
-    halo.scale.set(1.6, 1.6, 1);
-    g.add(halo);
-    const pool = new THREE.Mesh(poolGeo, poolMat);
-    pool.position.set(0, -4.48, 2.2);
-    g.add(pool);
-    lights.push(g);
+    const light = new THREE.PointLight(PALETTE.sodium, 26, 15, 1.8);
+    light.position.set(0, -0.4, 1.0);
+    g.add(light);
+    lights.push(light);
     scene.add(g);
   }
   return lights;
