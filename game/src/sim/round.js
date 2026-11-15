@@ -24,7 +24,7 @@ export function createRound(state, events, charge, grenades) {
     for (const a of state.actors) {
       a.money = ECONOMY.start;
       a.alive = false;
-      a.stats.kills = a.stats.deaths = a.stats.assists = a.stats.damage = a.stats.mvps = 0;
+      a.stats.kills = a.stats.headshots = a.stats.deaths = a.stats.assists = a.stats.damage = a.stats.mvps = 0;
     }
     startRound(true);
   }
@@ -146,6 +146,7 @@ export function createRound(state, events, charge, grenades) {
     if (victim.hasCharge) charge.drop(victim);
     if (killer && killer.team !== victim.team) {
       killer.stats.kills++;
+      if (headshot) killer.stats.headshots++;
       killer.stats.roundKills++;
       earn(killer, def.killReward ?? 300);
     }
@@ -172,6 +173,7 @@ export function createRound(state, events, charge, grenades) {
     if (WEAPONS[id]) {
       const def = WEAPONS[id];
       const held = actor.slots[def.slot];
+      if (def.side && def.side !== side) return -1; // each side has its own rifle
       return held && held.def.id === id ? -1 : def.price;
     }
     if (GRENADES[id]) {

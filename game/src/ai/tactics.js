@@ -141,7 +141,7 @@ export function createTactics(state, events, round) {
     const m = () => bot.money;
     if (!has) {
       if (m() >= 3900) {
-        if (m() >= 6000 && state.rng.chance(0.18)) round.buy(bot, 'vigil'); else round.buy(bot, 'lancer');
+        if (m() >= 6000 && state.rng.chance(0.18)) round.buy(bot, 'vigil'); else round.buy(bot, def ? 'halyard' : 'lancer');
       } else if (m() >= 2300) {
         round.buy(bot, state.rng.chance(0.55) ? 'hornet' : 'bracken');
       } else if (m() >= 1800 && state.round > 1) {

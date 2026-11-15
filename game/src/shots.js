@@ -57,9 +57,9 @@ const SCENES = {
     state.phase = 'live'; state.liveTime = 41; state.clock = 63;
     const wick = find(state, 'Wick'), holloway = find(state, 'Holloway'), craddock = find(state, 'Craddock');
     earlierKill(game, find(state, 'Pell'), me, 'lancer', true, 20.6, 11.2);
-    earlierKill(game, find(state, 'Sorrel'), craddock, 'lancer', false, 21.5, 17.4);
+    earlierKill(game, find(state, 'Sorrel'), craddock, 'halyard', false, 21.5, 17.4);
     earlierKill(game, find(state, 'Marrow'), wick, 'hornet', false, 18.2, 7.6);
-    earlierKill(game, find(state, 'Tamsin'), holloway, 'lancer', true, 29.5, 13.2);
+    earlierKill(game, find(state, 'Tamsin'), holloway, 'halyard', true, 29.5, 13.2);
     // The fighters stand aside while the smoke blooms, so nothing fires before the moment.
     const cast = [me, wick, holloway, craddock];
     for (const a of cast) a.alive = false;
@@ -68,8 +68,8 @@ const SCENES = {
     me.armor = 100; me.helmet = true; me.hp = 76; me.money = 2350;
     put(me, 20.9, 19.45); arm(me, 'lancer', 23);
     put(wick, 18.4, 16.2); wick.crouching = true; wick.crouch = 1; arm(wick, 'hornet');
-    put(holloway, 20.6, 14.6, Math.PI); arm(holloway, 'lancer');
-    put(craddock, 17.6, 12.4, Math.PI); arm(craddock, 'lancer');
+    put(holloway, 20.6, 14.6, Math.PI); arm(holloway, 'halyard');
+    put(craddock, 17.6, 12.4, Math.PI); arm(craddock, 'halyard');
     aimAt(me, holloway, 1.25);
     me.triggerHeld = true;
     me.walking = true;
@@ -90,6 +90,7 @@ const SCENES = {
     for (const a of state.actors) if (a.brain && a.team === 'cell') a.yaw = 0.2;
     for (let i = 0; i < 20; i++) game.simulate(1 / 60, true);
     game.buyMenu.show();
+    game.buyMenu.tick();
   },
 
   // Second half: Lumen Cell now defends. The charge is down on B; a smoke covers the defuse.
@@ -104,19 +105,23 @@ const SCENES = {
     charge.give(isolde);
     isolde.wantUse = true;
     for (let i = 0; i < 200 && state.charge.phase !== 'planted'; i++) { isolde.wantUse = true; charge.update(1 / 60); }
-    earlierKill(game, isolde, tamsin, 'lancer', true, 34.6, 3.4);
+    earlierKill(game, isolde, tamsin, 'halyard', true, 34.6, 3.4);
     earlierKill(game, holloway, me, 'vigil', false, 30.4, 9.6);
     put(me, 32.8, 5.9);
     me.kit = true; me.armor = 64; me.helmet = true; me.hp = 58; me.money = 1100;
-    arm(me, 'lancer', 11);
-    put(tamsin, 30.8, 3.6, -0.9); arm(tamsin, 'lancer');
+    arm(me, 'halyard', 11);
+    put(tamsin, 30.8, 3.6, -0.9); arm(tamsin, 'halyard');
     game.grenades.spawn('smoke', tamsin, cellX(36.2), 0.3, cellZ(3.2), 0, 0, 0);
     me.crouching = true; me.crouch = 1;
     me.yaw = -0.62; me.pitch = -0.3;
+    // The surviving attackers are smoked out of the fight (blinded) so the defuse runs uninterrupted.
+    const holders = state.actors.filter((a) => a.alive && a.team === 'watch');
     for (let i = 0; i < 170; i++) {
       me.wantUse = true; me.crouching = true;
+      for (const a of holders) a.flash = 99;
       game.simulate(1 / 60, true);
     }
+    for (const a of holders) a.flash = 0;
     me.wantUse = true;
   },
 
@@ -128,7 +133,8 @@ const SCENES = {
     const tally = [[me, 14, 3, 6, 1510, 3], [find(state, 'Wick'), 9, 4, 7, 1140, 2], [find(state, 'Brannock'), 8, 2, 6, 990, 1],
       [find(state, 'Sorrel'), 5, 6, 7, 760, 0], [find(state, 'Tamsin'), 4, 3, 8, 640, 0], [find(state, 'Craddock'), 12, 2, 7, 1360, 2],
       [find(state, 'Holloway'), 9, 3, 7, 1080, 1], [find(state, 'Pell'), 6, 4, 8, 820, 0], [find(state, 'Isolde'), 5, 2, 8, 700, 0], [find(state, 'Marrow'), 3, 4, 9, 520, 0]];
-    for (const [a, k, as, d, dmg, mvp] of tally) Object.assign(a.stats, { kills: k, assists: as, deaths: d, damage: dmg, mvps: mvp });
+    const hsShare = [0.41, 0.33, 0.44, 0.2, 0.25, 0.5, 0.33, 0.17, 0.4, 0.33];
+    tally.forEach(([a, k, as, d, dmg, mvp], i) => Object.assign(a.stats, { kills: k, headshots: Math.round(k * hsShare[i]), assists: as, deaths: d, damage: dmg, mvps: mvp }));
     state.phase = 'live'; state.liveTime = 50; state.clock = 38;
     put(me, 6.2, 6.4, -2.3); arm(me, 'lancer', 17);
     for (const name of ['Pell', 'Isolde', 'Marrow']) earlierKill(game, find(state, name), me, 'lancer', name !== 'Marrow', 7 + name.length * 0.4, 8 - name.length * 0.3);

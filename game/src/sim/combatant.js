@@ -24,7 +24,7 @@ export function createCombatant(id, name, team, isPlayer) {
     // feedback
     flash: 0, hurtTime: -10, hurtYaw: 0, tagged: 0, stepDistance: 0, lastShotTime: -10,
     // stats for the scoreboard
-    stats: { kills: 0, deaths: 0, assists: 0, damage: 0, roundKills: 0, mvps: 0 },
+    stats: { kills: 0, headshots: 0, deaths: 0, assists: 0, damage: 0, roundKills: 0, mvps: 0 },
     damageBy: new Map(), // attacker id -> damage this life (assists)
     deathTime: 0, killerId: -1,
     brain: null,

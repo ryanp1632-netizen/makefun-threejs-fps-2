@@ -18,6 +18,14 @@ const HORNET_PATTERN = [
   [0.002, 0.006], [0.002, 0.006], [0.001, 0.002], [0.001, -0.004], [0.001, -0.006],
   [0.001, -0.004], [0.001, 0.002], [0.001, 0.005], [0.001, 0.004], [0.001, -0.002],
 ];
+// The defenders' rifle kicks less and drifts right before it settles: easier to hold, less punch.
+const HALYARD_PATTERN = [
+  [0.000, 0.000], [0.008, 0.001], [0.011, 0.002], [0.012, 0.003], [0.012, 0.004],
+  [0.010, 0.005], [0.008, 0.005], [0.005, 0.003], [0.003, -0.002], [0.002, -0.006],
+  [0.002, -0.008], [0.002, -0.006], [0.001, -0.002], [0.001, 0.003], [0.001, 0.006],
+  [0.001, 0.006], [0.001, 0.002], [0.001, -0.003], [0.001, -0.005], [0.001, -0.004],
+  [0.001, 0.000], [0.001, 0.004], [0.001, 0.005], [0.001, 0.002], [0.001, -0.002],
+];
 const SINGLE_KICK = [[0.028, 0.002]];
 
 export const SLOT = Object.freeze({ PRIMARY: 1, SIDEARM: 2, MELEE: 3, GRENADE: 4, CHARGE: 5 });
@@ -52,11 +60,18 @@ export const WEAPONS = {
     pattern: [[0.06, 0.0]], kick: 2.2, speed: 0.9, sound: 'shotgun',
   },
   lancer: {
-    id: 'lancer', name: 'Lancer AR', kind: 'Rifle', slot: SLOT.PRIMARY, price: 2700, killReward: 300,
+    id: 'lancer', name: 'Lancer AR', kind: 'Rifle', slot: SLOT.PRIMARY, price: 2700, killReward: 300, side: 'atk',
     damage: 35, armorPen: 0.78, headMult: 4, rangeFalloff: 0.98, pellets: 1,
     auto: true, rpm: 600, mag: 30, reserve: 90, reload: 2.5,
     spread: 0.0035, moveSpread: 0.075, airSpread: 0.2, sprayGrow: 0.0018, maxSpray: 0.03, recover: 5,
     pattern: LANCER_PATTERN, kick: 1.0, speed: 0.86, sound: 'rifle',
+  },
+  halyard: {
+    id: 'halyard', name: 'Halyard C7', kind: 'Rifle', slot: SLOT.PRIMARY, price: 3000, killReward: 300, side: 'def',
+    damage: 32, armorPen: 0.7, headMult: 4, rangeFalloff: 0.98, pellets: 1,
+    auto: true, rpm: 666, mag: 25, reserve: 75, reload: 3.0,
+    spread: 0.003, moveSpread: 0.07, airSpread: 0.2, sprayGrow: 0.0015, maxSpray: 0.026, recover: 5.5,
+    pattern: HALYARD_PATTERN, kick: 0.85, speed: 0.88, sound: 'rifle',
   },
   vigil: {
     id: 'vigil', name: 'Vigil DMR', kind: 'Marksman', slot: SLOT.PRIMARY, price: 4500, killReward: 100,
@@ -86,7 +101,7 @@ export const GEAR = {
 // The buy menu's layout: one column per category, the order the keys 1-4 then 1-5 pick from.
 export const BUY_MENU = [
   { title: 'Sidearms', items: ['pike'] },
-  { title: 'Primaries', items: ['hornet', 'bracken', 'lancer', 'vigil'] },
+  { title: 'Primaries', items: ['hornet', 'bracken', 'lancer', 'halyard', 'vigil'] },
   { title: 'Grenades', items: ['frag', 'smoke', 'flash'] },
   { title: 'Gear', items: ['vest', 'helm', 'kit'] },
 ];

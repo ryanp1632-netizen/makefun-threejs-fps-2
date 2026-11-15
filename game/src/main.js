@@ -209,6 +209,7 @@ function render(frameDt) {
   input.takeLook(look);
   if (!state.paused) control.look(look);
   if (buyMenu.open && !round.canBuy(p)) { buyMenu.hide(); input.requestLock(); }
+  if (buyMenu.open) buyMenu.tick();
 
   const v = viewTarget();
   eye.x = v.pos.x; eye.y = v.pos.y + eyeHeight(v); eye.z = v.pos.z;

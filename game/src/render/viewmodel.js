@@ -77,23 +77,25 @@ const BUILD = {
     g.add(box(0.064, 0.015, 0.12, accent, 0, 0.065, -0.05));
     return { group: g, muzzle: -0.66, mag: pump };
   },
-  lancer(accent) {
+  lancer(accent, furniture = M.polymer, magLength = 0.17) {
     const g = new THREE.Group();
     g.add(box(0.062, 0.1, 0.42, M.metal, 0, 0.0, -0.1));
-    g.add(box(0.07, 0.085, 0.3, M.polymer, 0, 0.0, -0.42));       // handguard
+    g.add(box(0.07, 0.085, 0.3, furniture, 0, 0.0, -0.42));       // handguard
     g.add(tube(0.016, 0.22, M.metal, 0, 0.012, -0.66));            // barrel
     g.add(box(0.03, 0.04, 0.05, M.metal, 0, 0.012, -0.79));        // flash hider
     g.add(box(0.05, 0.03, 0.16, M.metal, 0, 0.07, -0.12));         // rail
     g.add(box(0.044, 0.05, 0.07, M.polymer, 0, 0.11, -0.12));      // optic body
     g.add(box(0.03, 0.03, 0.01, M.lens, 0, 0.115, -0.158));
     g.add(box(0.045, 0.11, 0.05, M.polymer, 0, -0.09, 0.03));      // grip
-    g.add(box(0.05, 0.08, 0.14, M.polymer, 0, -0.01, 0.2));        // stock
+    g.add(box(0.05, 0.08, 0.14, furniture, 0, -0.01, 0.2));        // stock
     g.add(box(0.012, 0.03, 0.012, M.metal, 0, 0.062, -0.74));      // front sight post
     g.add(box(0.03, 0.012, 0.05, M.metal, 0.034, 0.03, -0.04));    // charging handle
     g.add(box(0.074, 0.02, 0.18, accent, 0, 0.0, -0.44));
-    const mag = box(0.04, 0.17, 0.07, M.metal, 0, -0.13, -0.18); mag.rotation.x = 0.22; g.add(mag);
+    const mag = box(0.04, magLength, 0.07, M.metal, 0, -0.05 - magLength / 2, -0.18); mag.rotation.x = 0.22; g.add(mag);
     return { group: g, muzzle: -0.82, mag };
   },
+  // The defenders' rifle: the same action in tan furniture with a straight, shorter magazine.
+  halyard(accent) { return BUILD.lancer(accent, M.tan, 0.13); },
   vigil(accent) {
     const g = new THREE.Group();
     g.add(box(0.06, 0.09, 0.5, M.tan, 0, 0.0, -0.08));
@@ -158,11 +160,11 @@ export function createViewmodel(width, height, tex) {
   rig.add(handR, handL);
 
   const models = {};
-  for (const id of ['wren', 'pike', 'hornet', 'bracken', 'lancer', 'vigil', 'shiv']) models[id] = BUILD[id](accent);
+  for (const id of ['wren', 'pike', 'hornet', 'bracken', 'lancer', 'halyard', 'vigil', 'shiv']) models[id] = BUILD[id](accent);
   for (const kind of ['frag', 'smoke', 'flash']) models[kind] = BUILD.grenade(accent, kind);
   models.charge = BUILD.charge();
   // Where the left hand rests on each model (z on the handguard), null for one-handed holds.
-  const SUPPORT = { wren: -0.02, pike: -0.02, hornet: -0.22, bracken: -0.36, lancer: -0.42, vigil: -0.3, charge: 0.06 };
+  const SUPPORT = { wren: -0.02, pike: -0.02, hornet: -0.22, bracken: -0.36, lancer: -0.42, halyard: -0.42, vigil: -0.3, charge: 0.06 };
   for (const m of Object.values(models)) { m.group.visible = false; rig.add(m.group); }
 
   const flash = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex.flare, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
