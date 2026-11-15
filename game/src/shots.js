@@ -59,18 +59,18 @@ const SCENES = {
     earlierKill(game, find(state, 'Pell'), me, 'lancer', true, 20.6, 11.2);
     earlierKill(game, find(state, 'Sorrel'), craddock, 'lancer', false, 21.5, 17.4);
     earlierKill(game, find(state, 'Marrow'), wick, 'hornet', false, 18.2, 7.6);
-    me.alive = false; // off the field while the scene settles
-    me.armor = 100; me.helmet = true; me.hp = 76; me.money = 2350;
-    arm(me, 'lancer', 23);
-    put(wick, 18.4, 16.2); wick.crouching = true; wick.crouch = 1;
-    arm(wick, 'hornet');
-    put(holloway, 21.4, 11.8, Math.PI); arm(holloway, 'lancer');
-    put(craddock, 18.0, 9.6, Math.PI); arm(craddock, 'lancer');
+    earlierKill(game, find(state, 'Tamsin'), holloway, 'lancer', true, 29.5, 13.2);
+    // The fighters stand aside while the smoke blooms, so nothing fires before the moment.
+    const cast = [me, wick, holloway, craddock];
+    for (const a of cast) a.alive = false;
     game.grenades.spawn('smoke', craddock, cellX(19.6), 0.3, cellZ(5.4), 0, 0, 0);
-    for (let i = 0; i < 200; i++) game.simulate(1 / 60, true); // the smoke blooms; the bots take their angles
-    put(me, 21.55, 19.45);
+    for (let i = 0; i < 200; i++) game.simulate(1 / 60, true);
+    me.armor = 100; me.helmet = true; me.hp = 76; me.money = 2350;
+    put(me, 20.9, 19.45); arm(me, 'lancer', 23);
+    put(wick, 18.4, 16.2); wick.crouching = true; wick.crouch = 1; arm(wick, 'hornet');
+    put(holloway, 20.6, 14.6, Math.PI); arm(holloway, 'lancer');
+    put(craddock, 17.6, 12.4, Math.PI); arm(craddock, 'lancer');
     aimAt(me, holloway, 1.25);
-    put(holloway, 21.4, 11.8, Math.PI);
     me.triggerHeld = true;
     me.walking = true;
     game.hud.radio(wick, 'two at the kiln crates, smoke on the gate');
@@ -100,19 +100,19 @@ const SCENES = {
     state.phase = 'live'; state.liveTime = 70;
     const me = state.player, tamsin = find(state, 'Tamsin'), isolde = find(state, 'Isolde'), holloway = find(state, 'Holloway');
     for (const a of state.actors) a.hasCharge = false;
-    put(isolde, 34, 6.3);
+    put(isolde, 33.2, 5.2);
     charge.give(isolde);
     isolde.wantUse = true;
     for (let i = 0; i < 200 && state.charge.phase !== 'planted'; i++) { isolde.wantUse = true; charge.update(1 / 60); }
-    earlierKill(game, isolde, tamsin, 'lancer', true, 35.2, 7.1);
+    earlierKill(game, isolde, tamsin, 'lancer', true, 34.6, 3.4);
     earlierKill(game, holloway, me, 'vigil', false, 30.4, 9.6);
-    put(me, 34.2, 5.6);
+    put(me, 32.8, 5.9);
     me.kit = true; me.armor = 64; me.helmet = true; me.hp = 58; me.money = 1100;
     arm(me, 'lancer', 11);
-    put(tamsin, 31.5, 4.8, -0.9); arm(tamsin, 'lancer');
-    game.grenades.spawn('smoke', tamsin, cellX(33.4), 0.3, cellZ(9.6), 0, 0, 0);
+    put(tamsin, 30.8, 3.6, -0.9); arm(tamsin, 'lancer');
+    game.grenades.spawn('smoke', tamsin, cellX(36.2), 0.3, cellZ(3.2), 0, 0, 0);
     me.crouching = true; me.crouch = 1;
-    me.yaw = 2.86; me.pitch = -0.36;
+    me.yaw = -0.62; me.pitch = -0.3;
     for (let i = 0; i < 170; i++) {
       me.wantUse = true; me.crouching = true;
       game.simulate(1 / 60, true);
@@ -130,7 +130,7 @@ const SCENES = {
       [find(state, 'Holloway'), 9, 3, 7, 1080, 1], [find(state, 'Pell'), 6, 4, 8, 820, 0], [find(state, 'Isolde'), 5, 2, 8, 700, 0], [find(state, 'Marrow'), 3, 4, 9, 520, 0]];
     for (const [a, k, as, d, dmg, mvp] of tally) Object.assign(a.stats, { kills: k, assists: as, deaths: d, damage: dmg, mvps: mvp });
     state.phase = 'live'; state.liveTime = 50; state.clock = 38;
-    put(me, 6.2, 6.4, 0.6); arm(me, 'lancer', 17);
+    put(me, 6.2, 6.4, -2.3); arm(me, 'lancer', 17);
     for (const name of ['Pell', 'Isolde', 'Marrow']) earlierKill(game, find(state, name), me, 'lancer', name !== 'Marrow', 7 + name.length * 0.4, 8 - name.length * 0.3);
     earlierKill(game, find(state, 'Craddock'), find(state, 'Wick'), 'hornet', false, 9.5, 3.5);
     earlierKill(game, find(state, 'Holloway'), find(state, 'Brannock'), 'lancer', true, 3.2, 9.1);

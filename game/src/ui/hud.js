@@ -100,16 +100,12 @@ export function createHud(state, round) {
     set(el.mag, 'mg', mag);
     set(el.reserve, 'rs', reserve);
     el.ammo.classList.toggle('low', !!w && !w.def.melee && w.mag <= Math.ceil((w.def.mag ?? 0) * 0.25) && p.active < SLOT.GRENADE);
-    const labels = [
-      p.slots[SLOT.PRIMARY] ? `1 ${p.slots[SLOT.PRIMARY].def.name.split(' ')[0]}` : '1 —',
-      p.slots[SLOT.SIDEARM] ? `2 ${p.slots[SLOT.SIDEARM].def.name.split(' ')[0]}` : '2 —',
-      '3 Shiv', `4 Nades ${p.grenades.frag + p.grenades.smoke + p.grenades.flash}`, p.hasCharge ? '5 Charge' : '5 —',
-    ];
-    for (let i = 0; i < 5; i++) {
-      set(el.slots[i], `sl${i}`, labels[i]);
-      const owned = i === 2 || (i === 3 ? labels[3].slice(-1) !== '0' : i === 4 ? p.hasCharge : !!p.slots[i + 1]);
-      set(el.slots[i], `slc${i}`, `${p.active === i + 1 ? 'on' : ''} ${owned ? '' : 'empty'}`, 'className');
-    }
+    const nades = p.grenades.frag + p.grenades.smoke + p.grenades.flash;
+    slot(0, p.slots[SLOT.PRIMARY] ? `1 ${p.slots[SLOT.PRIMARY].def.name.split(' ')[0]}` : '1 —', !!p.slots[SLOT.PRIMARY]);
+    slot(1, p.slots[SLOT.SIDEARM] ? `2 ${p.slots[SLOT.SIDEARM].def.name.split(' ')[0]}` : '2 —', !!p.slots[SLOT.SIDEARM]);
+    slot(2, '3 Shiv', true);
+    slot(3, `4 Nades ${nades}`, nades > 0);
+    slot(4, p.hasCharge ? '5 Charge' : '5 —', p.hasCharge);
 
     // Crosshair gap: the real cone projected to pixels, plus a floor so it never closes.
     const cone = inaccuracy(p);
@@ -133,10 +129,17 @@ export function createHud(state, round) {
     if (bannerUntil && state.time > bannerUntil) { el.banner.classList.add('hidden'); bannerUntil = 0; }
   }
 
+  function slot(i, label, owned) {
+    set(el.slots[i], slotKeys[i], label);
+    set(el.slots[i], slotClassKeys[i], state.player.active === i + 1 ? 'on' : owned ? '' : 'empty', 'className');
+  }
+  const slotKeys = ['sl0', 'sl1', 'sl2', 'sl3', 'sl4'];
+  const slotClassKeys = ['sc0', 'sc1', 'sc2', 'sc3', 'sc4'];
+
   function pips(node, alive, key) {
     if (last.get(key) === alive) return;
     last.set(key, alive);
-    [...node.children].forEach((pip, i) => pip.classList.toggle('dead', i >= alive));
+    for (let i = 0; i < node.children.length; i++) node.children[i].classList.toggle('dead', i >= alive);
   }
 
   function updatePrompt(p) {

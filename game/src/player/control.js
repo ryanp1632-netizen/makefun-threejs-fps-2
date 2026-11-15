@@ -3,10 +3,9 @@
 // by yaw, walk and crouch, the trigger, Use, slot keys, reload, scope and grenade cycling.
 // During freeze time the player can look and buy but not move.
 import { SLOT } from '../data/weapons.js';
-import { equip, cycleGrenade } from '../sim/combatant.js';
+import { equip, cycleGrenade, activeWeapon } from '../sim/combatant.js';
 import { startReload, toggleScope } from '../sim/arms.js';
 import { maxSpeed } from '../sim/mover.js';
-import { activeWeapon } from '../sim/combatant.js';
 
 const PITCH_LIMIT = 1.5;
 

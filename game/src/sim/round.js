@@ -2,7 +2,7 @@
 // detonating or being defused, or by the clock running out on the attackers; money for kills,
 // wins and losses (with a growing loss bonus); first to 7 of 12, sides swap at the half.
 import { ROUND, ECONOMY } from '../core/config.js';
-import { SLOT, WEAPONS, GRENADES, GEAR } from '../data/weapons.js';
+import { WEAPONS, GRENADES, GEAR } from '../data/weapons.js';
 import { cellX, cellZ, inSpawn } from '../world/grid.js';
 import { spawnAt, giveWeapon } from './combatant.js';
 
@@ -208,5 +208,5 @@ export function createRound(state, events, charge, grenades) {
     return true;
   }
 
-  return { startMatch, update, buy, quote, canBuy, aliveOn, SLOT };
+  return { startMatch, update, buy, quote, canBuy };
 }

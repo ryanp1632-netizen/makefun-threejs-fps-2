@@ -102,11 +102,16 @@ export function createTactics(state, events, round) {
   function update(intel) {
     if (state.phase !== 'live') return;
     if (!plans.executing && plans.attack) {
-      const main = bots('atk').filter((b) => b.brain.role !== 'lurk');
-      const gathered = main.length > 0 && main.every((b) => b.brain.waiting);
-      if (gathered || state.liveTime > plans.execAt) {
+      // Execute once every living non-lurker is waiting at the stage point, or on the clock.
+      let caller = null, gathered = true;
+      for (const b of state.actors) {
+        if (!b.brain || !b.alive || state.sideOf(b) !== 'atk' || b.brain.role === 'lurk') continue;
+        caller ??= b;
+        if (!b.brain.waiting) { gathered = false; break; }
+      }
+      if ((caller && gathered) || state.liveTime > plans.execAt) {
         plans.executing = true;
-        events.emit('radio', { from: main[0] ?? null, text: `go go, executing ${plans.attack.site}`, side: 'atk' });
+        events.emit('radio', { from: caller, text: `go go, executing ${plans.attack.site}` });
       }
     }
     // Defenders rotate once toward a site where the team has called two or more contacts.
@@ -124,7 +129,7 @@ export function createTactics(state, events, round) {
           bot.brain.role = info.site;
         }
       }
-      events.emit('radio', { from: bots('def')[0] ?? null, text: `rotating ${info.site}`, side: 'def' });
+      events.emit('radio', { from: bots('def')[0] ?? null, text: `rotating ${info.site}` });
     }
   }
 

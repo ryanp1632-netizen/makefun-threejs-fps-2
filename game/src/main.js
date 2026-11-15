@@ -34,11 +34,11 @@ import { createHud } from './ui/hud.js';
 import { createMinimap } from './ui/minimap.js';
 import { createBuyMenu, createScoreboard } from './ui/menus.js';
 import { PALETTE } from './core/palette.js';
+import { buildWorld, buildLighting } from './world/builder.js';
+import { createTextures } from './world/textures.js';
 import { createSoldiers } from './render/soldiers.js';
 import { createViewmodel } from './render/viewmodel.js';
 import { createEffects } from './render/effects.js';
-import { buildWorld, buildLighting } from './world/builder.js';
-import { createTextures } from './world/textures.js';
 import { createSound } from './audio/sound.js';
 
 const params = new URLSearchParams(location.search);
@@ -257,7 +257,8 @@ let minimapIn = 0;
 function viewTarget() {
   const p = state.player;
   if (p.alive || state.phase === 'freeze') return p;
-  return state.actors.find((a) => a.alive && a.team === p.team) ?? p;
+  for (const a of state.actors) if (a.alive && a.team === p.team) return a;
+  return p;
 }
 
 // Behind the title screen: a slow pan across the pans and the kiln at dusk.

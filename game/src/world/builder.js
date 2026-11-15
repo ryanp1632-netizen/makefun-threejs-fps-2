@@ -125,7 +125,7 @@ function addSigns(scene) {
 function addSiteMarks(scene) {
   for (const [site, cell] of Object.entries(PLANT_SPOTS)) {
     const color = site === 'A' ? PALETTE.watch : PALETTE.cell;
-    const mat = new THREE.MeshStandardMaterial({ map: signTexture(site, 'CHARGE ZONE', color), transparent: true, roughness: 1, polygonOffset: true, polygonOffsetFactor: -4, depthWrite: false });
+    const mat = new THREE.MeshStandardMaterial({ map: signTexture(site, 'CHARGE ZONE', color), transparent: true, opacity: 0.55, roughness: 1, polygonOffset: true, polygonOffsetFactor: -4, depthWrite: false });
     const mark = new THREE.Mesh(new THREE.PlaneGeometry(5, 5), mat);
     mark.rotation.x = -Math.PI / 2;
     mark.position.set(cellX(cell[0]), 0.015, cellZ(cell[1]));

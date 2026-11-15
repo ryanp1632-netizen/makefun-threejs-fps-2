@@ -5,7 +5,7 @@
 import { MOVE } from '../core/config.js';
 import { SLOT } from '../data/weapons.js';
 import { activeWeapon, applyDamage, bestSlot, cycleGrenade, grenadeCount } from './combatant.js';
-import { traceShot, zoneMultiplier, shotHit } from './ballistics.js';
+import { traceShot, zoneMultiplier } from './ballistics.js';
 import { eyeHeight } from './mover.js';
 
 const RECOIL_RECOVER = 9;    // how fast the view punch settles once the trigger is released
@@ -154,6 +154,7 @@ function hitTarget(attacker, target, def, zone, dist, ctx) {
   const amount = def.damage * falloff * zoneMultiplier(zone, def.headMult);
   const dealt = applyDamage(target, amount, zone, def.armorPen, attacker);
   target.hurtTime = ctx.state.time;
+  target.tagged = MOVE.taggedTime;
   ctx.events.emit('damage', { attacker, target, zone, dealt });
   if (target.hp <= 0) ctx.kill(target, attacker, def, zone === 'head');
 }
@@ -192,5 +193,3 @@ export function throwGrenade(actor, kind, yaw, pitch, ctx) {
   }
   return true;
 }
-
-export { shotHit };

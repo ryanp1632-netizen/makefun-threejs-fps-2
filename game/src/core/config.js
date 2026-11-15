@@ -26,6 +26,8 @@ export const MOVE = Object.freeze({
   friction: 9.5,         // exponential ground friction once input stops
   stopSpeed: 1.6,        // below this, friction bites harder (crisp counter-strafe)
   footstepRunSpeed: 3.6, // above this a step is audible to bots
+  taggedScale: 0.55,     // a body that was just hit is slowed: you cannot sprint through fire
+  taggedTime: 0.45,
 });
 
 export const ROUND = Object.freeze({

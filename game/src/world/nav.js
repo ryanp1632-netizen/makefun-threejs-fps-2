@@ -115,5 +115,3 @@ export function findPath(sx, sz, tx, tz, out) {
   return out.length / 2;
 }
 const scratchCells = [];
-
-export { nearestWalkable };

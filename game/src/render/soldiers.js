@@ -21,7 +21,13 @@ const GEO = {
   helmet: new THREE.BoxGeometry(0.29, 0.13, 0.31).translate(0, 0.13, -0.01),
   visor: new THREE.BoxGeometry(0.22, 0.06, 0.03).translate(0, 0.03, -0.14),
   arm: new THREE.BoxGeometry(0.12, 0.12, 0.5).translate(0, 0, -0.22),
-  gun: new THREE.BoxGeometry(0.07, 0.11, 0.78).translate(0, 0, -0.42),
+  gun: new THREE.BoxGeometry(0.07, 0.11, 0.56).translate(0, 0, -0.34),
+  barrel: new THREE.BoxGeometry(0.035, 0.035, 0.3).translate(0, 0.02, -0.76),
+  mag: new THREE.BoxGeometry(0.05, 0.16, 0.07).translate(0, -0.12, -0.36),
+  pad: new THREE.BoxGeometry(0.16, 0.1, 0.24),
+  pouch: new THREE.BoxGeometry(0.11, 0.12, 0.07),
+  knee: new THREE.BoxGeometry(0.19, 0.12, 0.06).translate(0, -0.45, -0.11),
+  ear: new THREE.BoxGeometry(0.05, 0.1, 0.1),
   pack: new THREE.BoxGeometry(0.34, 0.36, 0.16),
   lamp: new THREE.BoxGeometry(0.08, 0.05, 0.02),
 };
@@ -48,21 +54,32 @@ function buildSoldier(actor, mats) {
   for (const leg of [legL, legR]) {
     leg.add(new THREE.Mesh(GEO.leg, mats.fatigue));
     leg.add(new THREE.Mesh(GEO.boot, mats.dark));
+    leg.add(new THREE.Mesh(GEO.knee, mats.dark));
   }
   const chest = new THREE.Group(); hips.add(chest);
   chest.add(new THREE.Mesh(GEO.torso, mats.fatigue));
   chest.add(new THREE.Mesh(GEO.vest, mats.vest));
   chest.add(new THREE.Mesh(GEO.stripe, mats.accent));
+  for (const side of [-1, 1]) {
+    const pad = new THREE.Mesh(GEO.pad, mats.accent); pad.position.set(side * 0.29, 0.56, 0); chest.add(pad);
+  }
+  for (const x of [-0.13, 0, 0.13]) {
+    const pouch = new THREE.Mesh(GEO.pouch, mats.dark); pouch.position.set(x, 0.24, -0.19); chest.add(pouch);
+  }
   const pack = new THREE.Mesh(GEO.pack, mats.charge); pack.position.set(0, 0.36, 0.24); chest.add(pack);
   const packLamp = new THREE.Mesh(GEO.lamp, mats.chargeLamp); packLamp.position.set(0.08, 0.46, 0.33); chest.add(packLamp);
   const head = new THREE.Group(); head.position.y = 0.74; chest.add(head);
   head.add(new THREE.Mesh(GEO.head, mats.skin));
   head.add(new THREE.Mesh(GEO.helmet, mats.vest));
   head.add(new THREE.Mesh(GEO.visor, mats.accent));
+  for (const side of [-1, 1]) {
+    const ear = new THREE.Mesh(GEO.ear, mats.dark); ear.position.set(side * 0.14, 0.02, 0); head.add(ear);
+  }
   const arms = new THREE.Group(); arms.position.set(0, 0.5, -0.05); chest.add(arms);
   const armL = new THREE.Mesh(GEO.arm, mats.fatigue); armL.position.set(-0.2, 0, 0); armL.rotation.y = -0.35; arms.add(armL);
   const armR = new THREE.Mesh(GEO.arm, mats.fatigue); armR.position.set(0.2, -0.02, 0); armR.rotation.y = 0.2; arms.add(armR);
-  const gun = new THREE.Mesh(GEO.gun, mats.gun); gun.position.set(0.06, -0.02, -0.05); arms.add(gun);
+  const gun = new THREE.Group(); gun.position.set(0.06, -0.02, -0.05); arms.add(gun);
+  gun.add(new THREE.Mesh(GEO.gun, mats.gun), new THREE.Mesh(GEO.barrel, mats.gun), new THREE.Mesh(GEO.mag, mats.gun));
   root.traverse((o) => { if (o.isMesh) { o.castShadow = true; } });
 
   let tag = null;

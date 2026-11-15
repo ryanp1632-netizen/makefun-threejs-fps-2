@@ -9,11 +9,11 @@ import { activeWeapon } from '../sim/combatant.js';
 import { PALETTE } from '../core/palette.js';
 
 const M = {
-  metal: new THREE.MeshStandardMaterial({ color: 0x24262a, roughness: 0.42, metalness: 0.75 }),
-  polymer: new THREE.MeshStandardMaterial({ color: 0x3a3d40, roughness: 0.8 }),
-  tan: new THREE.MeshStandardMaterial({ color: 0x9c8462, roughness: 0.85 }),
-  glove: new THREE.MeshStandardMaterial({ color: 0x23211f, roughness: 0.95 }),
-  sleeve: new THREE.MeshStandardMaterial({ color: 0x3b3833, roughness: 0.95 }),
+  metal: new THREE.MeshStandardMaterial({ color: 0x474d55, roughness: 0.38, metalness: 0.7 }),
+  polymer: new THREE.MeshStandardMaterial({ color: 0x5a5d52, roughness: 0.75 }),
+  tan: new THREE.MeshStandardMaterial({ color: 0xa88f68, roughness: 0.8 }),
+  glove: new THREE.MeshStandardMaterial({ color: 0x3d3731, roughness: 0.95 }),
+  sleeve: new THREE.MeshStandardMaterial({ color: 0x6a6157, roughness: 0.95 }),
   blade: new THREE.MeshStandardMaterial({ color: 0xc9ccd0, roughness: 0.25, metalness: 0.9 }),
   lens: new THREE.MeshStandardMaterial({ color: 0x0d1a22, roughness: 0.1, metalness: 0.4, emissive: 0x0a2830 }),
   frag: new THREE.MeshStandardMaterial({ color: 0x4b5a3c, roughness: 0.7 }),
@@ -85,7 +85,9 @@ const BUILD = {
     g.add(box(0.044, 0.05, 0.07, M.polymer, 0, 0.11, -0.12));      // optic body
     g.add(box(0.03, 0.03, 0.01, M.lens, 0, 0.115, -0.158));
     g.add(box(0.045, 0.11, 0.05, M.polymer, 0, -0.09, 0.03));      // grip
-    g.add(box(0.05, 0.09, 0.26, M.polymer, 0, -0.01, 0.26));       // stock
+    g.add(box(0.05, 0.08, 0.14, M.polymer, 0, -0.01, 0.2));        // stock
+    g.add(box(0.012, 0.03, 0.012, M.metal, 0, 0.062, -0.74));      // front sight post
+    g.add(box(0.03, 0.012, 0.05, M.metal, 0.034, 0.03, -0.04));    // charging handle
     g.add(box(0.074, 0.02, 0.18, accent, 0, 0.0, -0.44));
     const mag = box(0.04, 0.17, 0.07, M.metal, 0, -0.13, -0.18); mag.rotation.x = 0.22; g.add(mag);
     return { group: g, muzzle: -0.82, mag };
@@ -98,7 +100,7 @@ const BUILD = {
     g.add(tube(0.034, 0.3, M.metal, 0, 0.1, -0.12));               // scope tube
     g.add(tube(0.042, 0.05, M.metal, 0, 0.1, -0.28));
     g.add(tube(0.04, 0.05, M.metal, 0, 0.1, 0.03));
-    g.add(box(0.05, 0.12, 0.3, M.tan, 0, -0.04, 0.3));
+    g.add(box(0.05, 0.12, 0.18, M.tan, 0, -0.04, 0.22));
     g.add(box(0.064, 0.02, 0.2, accent, 0, -0.02, -0.18));
     const mag = box(0.04, 0.08, 0.08, M.metal, 0, -0.09, -0.06); g.add(mag);
     return { group: g, muzzle: -0.87, mag };
@@ -130,10 +132,13 @@ const BUILD = {
 export function createViewmodel(width, height, tex) {
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(58, width / height, 0.01, 10);
-  scene.add(new THREE.HemisphereLight(0xc7c0e0, 0x403028, 1.4));
-  const key = new THREE.DirectionalLight(0xffc89a, 2.2);
+  scene.add(new THREE.HemisphereLight(0xd6cfee, 0x5a4636, 2.1));
+  const key = new THREE.DirectionalLight(0xffc89a, 3.2);
   key.position.set(-1, 1.5, 1);
   scene.add(key);
+  const rim = new THREE.DirectionalLight(0x9fb8ff, 1.4);
+  rim.position.set(1.5, 0.6, -1);
+  scene.add(rim);
   const flashLight = new THREE.PointLight(0xffb060, 0, 3, 2);
   scene.add(flashLight);
 
@@ -200,10 +205,10 @@ export function createViewmodel(width, height, tex) {
     anim.swing = Math.max(0, anim.swing - dt * 3.5);
     anim.throwT = Math.max(0, anim.throwT - dt * 2.4);
 
-    let x = 0.2 + Math.cos(anim.bob) * 0.012 * bobAmp + anim.swayX;
-    let y = -0.2 + Math.abs(Math.sin(anim.bob)) * -0.016 * bobAmp + anim.swayY - (actor.onGround ? 0 : 0.02);
-    let z = -0.42 + anim.kick * 0.05;
-    let rx = anim.kick * 0.09, ry = 0, rz = 0;
+    let x = 0.17 + Math.cos(anim.bob) * 0.012 * bobAmp + anim.swayX;
+    let y = -0.18 + Math.abs(Math.sin(anim.bob)) * -0.016 * bobAmp + anim.swayY - (actor.onGround ? 0 : 0.02);
+    let z = -0.5 + anim.kick * 0.05;
+    let rx = anim.kick * 0.09, ry = 0.05, rz = 0;
     if (actor.drawTimer > 0) { y -= actor.drawTimer * 0.5; rx -= actor.drawTimer * 0.9; }
     // Reload: tilt the gun, drop the magazine, seat a new one.
     model.mag.position.y = model.mag.userData.baseY ?? (model.mag.userData.baseY = model.mag.position.y);

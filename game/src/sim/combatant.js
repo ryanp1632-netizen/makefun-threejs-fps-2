@@ -2,7 +2,7 @@
 // money, inventory and weapon-handling state. Damage, death and loadouts are applied here so the
 // player and the bots obey exactly the same rules.
 import { BODY } from '../core/config.js';
-import { WEAPONS, GRENADES, SLOT } from '../data/weapons.js';
+import { WEAPONS, SLOT } from '../data/weapons.js';
 
 export function createCombatant(id, name, team, isPlayer) {
   return {
@@ -22,7 +22,7 @@ export function createCombatant(id, name, team, isPlayer) {
     fireCooldown: 0, reloadTimer: 0, drawTimer: 0, triggerHeld: false, triggerWasHeld: false,
     sprayCount: 0, spray: 0, punchPitch: 0, punchYaw: 0, scope: 0, throwCooldown: 0,
     // feedback
-    flash: 0, hurtTime: -10, hurtYaw: 0, stepDistance: 0, lastShotTime: -10,
+    flash: 0, hurtTime: -10, hurtYaw: 0, tagged: 0, stepDistance: 0, lastShotTime: -10,
     // stats for the scoreboard
     stats: { kills: 0, deaths: 0, assists: 0, damage: 0, roundKills: 0, mvps: 0 },
     damageBy: new Map(), // attacker id -> damage this life (assists)
@@ -142,5 +142,3 @@ export function hitZones(actor, out) {
   out.legR = 0.2;
   return out;
 }
-
-export { GRENADES };

@@ -160,10 +160,3 @@ export function placeName(x, z) {
   const k = region[r * COLS + c];
   return k >= 0 ? CALLOUTS[calloutKeys[k]].name : '';
 }
-
-/** Writes the world centre of a [column, row] cell into out ({x, z}) and returns it. */
-export function cellCenter(cell, out) {
-  out.x = cellX(cell[0]);
-  out.z = cellZ(cell[1]);
-  return out;
-}

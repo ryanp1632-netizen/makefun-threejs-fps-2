@@ -10,13 +10,10 @@ import { heightAt, toCol, toRow, HALF_W, HALF_D } from '../world/grid.js';
 export function eyeHeight(body) {
   return BODY.standEye + (BODY.crouchEye - BODY.standEye) * body.crouch;
 }
-export function bodyHeight(body) {
-  return BODY.standHeight + (BODY.crouchHeight - BODY.standHeight) * body.crouch;
-}
 
-/** The top speed the body may reach this step given its weapon and stance. */
+/** The top speed the body may reach this step given its weapon, stance and any fresh hit. */
 export function maxSpeed(body, weaponSpeed) {
-  let speed = MOVE.runSpeed * weaponSpeed;
+  let speed = MOVE.runSpeed * weaponSpeed * (body.tagged > 0 ? MOVE.taggedScale : 1);
   if (body.crouch > 0.5) speed *= MOVE.crouchScale;
   else if (body.walking) speed *= MOVE.walkScale;
   return speed;
@@ -28,6 +25,7 @@ export function maxSpeed(body, weaponSpeed) {
  */
 export function stepBody(body, wishX, wishZ, wishSpeed, jump, dt) {
   // Crouch blends over ~0.12 s; uncrouching is never blocked (the culvert roof is above head).
+  body.tagged = Math.max(0, body.tagged - dt);
   const crouchTarget = body.crouching ? 1 : 0;
   body.crouch += Math.sign(crouchTarget - body.crouch) * Math.min(Math.abs(crouchTarget - body.crouch), dt * 8);
 
