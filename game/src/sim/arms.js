@@ -91,6 +91,7 @@ function finishReload(actor, events) {
 }
 
 function pullTrigger(actor, pressed, ctx) {
+  if (ctx.state.phase === 'freeze') return; // weapons are safe while the teams buy
   if (actor.active === SLOT.CHARGE) return; // the charge is planted with Use, see charge.js
   if (actor.active === SLOT.GRENADE) {
     if (pressed && actor.throwCooldown <= 0 && actor.drawTimer <= 0) {

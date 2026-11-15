@@ -13,7 +13,7 @@ function goal(cell, extra) {
 const at = (key) => CALLOUTS[key].cell;
 
 export function createTactics(state, events, round) {
-  const plans = { attack: null, executing: false, execAt: 0, rotated: false, lastPlan: '' };
+  const plans = state.plan;
 
   const bots = (side) => state.actors.filter((a) => a.brain && a.alive && state.sideOf(a) === side);
 
@@ -28,6 +28,7 @@ export function createTactics(state, events, round) {
     for (const bot of state.actors) if (bot.brain) shop(bot);
     plans.executing = false;
     plans.rotated = false;
+    for (const info of Object.values(state.intel)) { info.time = -99; info.site = null; info.spotted = 0; }
     let plan = state.rng.pick(ATTACK_PLANS);
     if (plan.id === plans.lastPlan) plan = state.rng.pick(ATTACK_PLANS);
     plans.attack = plan;
@@ -99,7 +100,7 @@ export function createTactics(state, events, round) {
   });
 
   /** Called every step: the attackers' execute call and the defenders' rotations. */
-  function update(intel) {
+  function update() {
     if (state.phase !== 'live') return;
     if (!plans.executing && plans.attack) {
       // Execute once every living non-lurker is waiting at the stage point, or on the clock.
@@ -116,7 +117,7 @@ export function createTactics(state, events, round) {
     }
     // Defenders rotate once toward a site where the team has called two or more contacts.
     const defTeam = state.teamOnSide('def');
-    const info = intel[defTeam];
+    const info = state.intel[defTeam];
     if (!plans.rotated && info.site && info.spotted >= 2 && state.time - info.time < 3 && state.charge.phase !== 'planted') {
       plans.rotated = true;
       const posts = DEFENSE_POSTS[info.site];
@@ -154,5 +155,5 @@ export function createTactics(state, events, round) {
     if (m() >= 900) round.buy(bot, 'frag');
   }
 
-  return { plans, update };
+  return { update };
 }

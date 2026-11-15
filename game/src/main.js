@@ -14,6 +14,7 @@
 //   ai/perception.js    sight, hearing, intel   ai/tactics.js  team plans, rotations, bot buys
 //   ai/brain.js         one bot: modes, routes, aim, bursts, counter-strafing, grenades
 //   render/*            soldiers, viewmodel, effects    ui/*  HUD, radar, buy menu, scoreboard
+//   feedback.js         sim events -> sound, effects, hit markers, kill feed, banners
 //   shots.js            the staged scenes the screenshots were rendered from (?shot=...)
 import * as THREE from 'three';
 import { SIM, AI, MOVE } from './core/config.js';
@@ -25,7 +26,7 @@ import { activeWeapon } from './sim/combatant.js';
 import { createGrenades } from './sim/grenades.js';
 import { createCharge } from './sim/charge.js';
 import { createRound } from './sim/round.js';
-import { createIntel, hear } from './ai/perception.js';
+import { listen } from './ai/perception.js';
 import { createTactics } from './ai/tactics.js';
 import { createBrain, stepBrain } from './ai/brain.js';
 import { createInput } from './player/input.js';
@@ -33,7 +34,7 @@ import { createControl } from './player/control.js';
 import { createHud } from './ui/hud.js';
 import { createMinimap } from './ui/minimap.js';
 import { createBuyMenu, createScoreboard } from './ui/menus.js';
-import { PALETTE } from './core/palette.js';
+import { wireFeedback } from './feedback.js';
 import { buildWorld, buildLighting } from './world/builder.js';
 import { createTextures } from './world/textures.js';
 import { createSoldiers } from './render/soldiers.js';
@@ -50,7 +51,7 @@ const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'hi
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
 renderer.autoClear = false;
@@ -66,14 +67,12 @@ buildLighting(scene);
 // ---- Simulation --------------------------------------------------------------------------------
 const events = createEvents();
 const state = createState(seed);
-state.roundStartTime = 0;
 const grenades = createGrenades(state, events);
 const charge = createCharge(state, events);
 const round = createRound(state, events, charge, grenades);
-const intel = createIntel();
 const tactics = createTactics(state, events, round);
 state.actors.forEach((a, i) => { if (!a.isPlayer) createBrain(a, 0.82 + state.rng.next() * 0.3, i); });
-const ctx = { state, events, grenades, intel, tactics, kill: state.kill };
+const ctx = { state, events, grenades, kill: state.kill };
 
 // ---- Views -------------------------------------------------------------------------------------
 const soldiers = createSoldiers(scene, state);
@@ -87,7 +86,8 @@ const board = createScoreboard(state);
 const input = createInput(renderer.domElement, onLockChange);
 const control = createControl(state, input, events);
 
-wireEvents();
+listen(state, events);
+wireFeedback(state, events, { sound, effects, hud, viewmodel, viewTarget, onMatchEnd });
 
 // ---- The fixed-step simulation -----------------------------------------------------------------
 const wishScratch = { x: 0, z: 0 };
@@ -118,7 +118,7 @@ function simulate(dt, scripted = false) {
   state.player.flash = Math.max(0, state.player.flash - dt);
   grenades.update(dt);
   round.update(dt);
-  tactics.update(intel);
+  tactics.update();
   state.time += dt;
   input.endStep();
 }
@@ -134,84 +134,13 @@ function footsteps(a, dt) {
   }
 }
 
-// ---- Event wiring: the simulation's facts drive sound, effects, the HUD and the bots' ears ------
-function wireEvents() {
-  const me = () => state.player;
-  events.on('shot', (s) => {
-    const own = s.shooter === me();
-    if (s.pellet === 0) sound.gunshot(s.def.sound, s.ox, s.oz, own);
-    if (s.pellet % 3 === 0) effects.tracer(s.ox, s.oy, s.oz, s.ex, s.ey, s.ez);
-    if (s.target) { if (s.target !== viewTarget()) effects.burst(s.ex, s.ey, s.ez, 0, 0, 0, 'blood'); }
-    else if (s.solid) { effects.burst(s.ex, s.ey, s.ez, s.nx, s.ny, s.nz, 'spark'); effects.hole(s.ex, s.ey, s.ez, s.nx, s.ny, s.nz); }
-    if (s.pellet === 0) hear(state, s.ox, s.oz, AI.hearGunshot, s.shooter.team, 'shot');
-  });
-  events.on('fired', (a) => { if (a === me()) viewmodel.onFired(a); });
-  events.on('swing', (a) => { if (a === me()) { viewmodel.onSwing(); sound.click('swing'); } });
-  events.on('throw', (a) => { if (a === me()) { viewmodel.onThrow(); sound.click('throw'); } });
-  events.on('reload', (a) => { if (a === me()) sound.click('reload'); });
-  events.on('reloaded', (a) => { if (a === me()) sound.click('reloaded'); });
-  events.on('dry', (a) => { if (a === me()) sound.click('dry'); });
-  events.on('draw', () => sound.click('draw'));
-  events.on('scope', () => sound.click('scope'));
-  events.on('damage', ({ attacker, target, zone }) => {
-    if (attacker === me() && target !== me()) { hud.hitMarker(target.hp <= 0 ? 'kill' : zone === 'head' ? 'head' : ''); sound.click(zone === 'head' ? 'headshot' : 'hit'); }
-    if (target === me()) sound.click('hurt');
-    if (target.brain && attacker && attacker.team !== target.team) {
-      // Being shot is the loudest call of all: turn toward it.
-      const m = target.brain.memory;
-      m.heardTime = state.time; m.heardX = attacker.pos.x; m.heardZ = attacker.pos.z; m.heardKind = 'hit';
-    }
-  });
-  events.on('kill', (k) => {
-    hud.renderFeed();
-    if (k.killer === me()) sound.click('kill');
-  });
-  events.on('step', ({ actor, loud }) => {
-    sound.step(actor.pos.x, actor.pos.z, actor === me(), loud);
-    hear(state, actor.pos.x, actor.pos.z, AI.hearStep, actor.team, 'step');
-  });
-  events.on('bounce', (p) => sound.boom('bounce', p.x, p.z));
-  events.on('detonate', (d) => {
-    sound.boom(d.kind, d.x, d.z);
-    effects.detonation(d.kind, d.x, d.y, d.z);
-    if (d.kind === 'flash' && me().flash > 0.6) sound.ring(Math.min(1, me().flash / 3));
-    hear(state, d.x, d.z, AI.hearGrenade, d.owner.team, 'grenade');
-  });
-  events.on('radio', ({ from, text }) => { if (from && from.team === me().team) hud.radio(from, text); });
-  events.on('plantStart', (a) => hear(state, a.pos.x, a.pos.z, 18, a.team, 'plant'));
-  events.on('defuseStart', (a) => hear(state, a.pos.x, a.pos.z, 18, a.team, 'defuse'));
-  events.on('planted', ({ charge: c, planter }) => {
-    sound.sting('plant');
-    hud.banner('Charge planted', `Site ${c.site} · ${planter.name} · 38 seconds`, 2.5, '#e5484d');
-  });
-  events.on('beep', (c) => { sound.beep(c.x, c.z); effects.onBeep(); });
-  events.on('detonated', (c) => { sound.boom('charge', c.x, c.z); effects.detonation('frag', c.x, c.y + 1, c.z); });
-  events.on('chargeDropped', () => { if (state.sideOf(me()) === 'atk') hud.radio(null, 'the charge is down'); });
-  events.on('roundStart', () => {
-    state.roundStartTime = state.time;
-    effects.clear();
-    hud.renderFeed();
-    const side = state.sideOf(me());
-    hud.banner(`Round ${state.round}`, side === 'atk' ? 'Attack · plant the charge on A or B' : 'Defend · hold A and B, retake and defuse', 3, PALETTE[me().team]);
-    viewmodel.setTeam(me().team);
-  });
-  events.on('live', () => sound.sting('start'));
-  events.on('roundEnd', (r) => {
-    const won = r.winner === me().team;
-    sound.sting(won ? 'win' : 'loss');
-    hud.banner(`${state.teams[r.winner].name} win`, `${r.reason}${r.mvp ? ` · MVP ${r.mvp.name}` : ''}`, 4.5, PALETTE[r.winner]);
-  });
-  events.on('halftime', () => { sound.sting('half'); hud.banner('Halftime', 'Sides swap · funds reset', 4.5); });
-  events.on('matchEnd', () => {
-    const w = state.matchWinner;
-    hud.banner(w === 'draw' ? 'Draw' : `${state.teams[w].name} take the match`, `${state.teams.cell.score} : ${state.teams.watch.score}`, 600, w === 'draw' ? '' : PALETTE[w]);
-    board.show();
-    input.releaseLock();
-    showScreen('title', 'Play again');
-  });
+// ---- Screens and keys --------------------------------------------------------------------------
+function onMatchEnd() {
+  board.show();
+  input.releaseLock();
+  showScreen('title', 'Play again');
 }
 
-// ---- Screens and keys --------------------------------------------------------------------------
 const screens = { title: document.getElementById('title'), pause: document.getElementById('pause') };
 function showScreen(name, label) {
   for (const [k, el] of Object.entries(screens)) el.classList.toggle('hidden', k !== name);

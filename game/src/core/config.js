@@ -73,6 +73,7 @@ export const AI = Object.freeze({
   hearGunshot: 46,
   hearStep: 13,
   hearGrenade: 22,
+  hearObjective: 18,     // the click of a charge being planted or defused
 });
 
 export const TEAM_NAMES = Object.freeze({

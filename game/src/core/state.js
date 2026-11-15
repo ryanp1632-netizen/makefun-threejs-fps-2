@@ -19,6 +19,7 @@ export function createState(seed, playerName = 'You') {
     phaseTime: 0,           // seconds left in the current phase
     clock: 0,               // round clock (stops once the charge is planted)
     liveTime: 0,            // seconds since the round went live (the buy window)
+    roundStartTime: 0,
     round: 0,
     teams: {
       cell: { id: 'cell', name: TEAM_NAMES.cell, side: 'atk', score: 0, lossStreak: 0 },
@@ -35,6 +36,11 @@ export function createState(seed, playerName = 'You') {
     paused: false,
     sideOf: (actor) => state.teams[actor.team].side,
     teamOnSide: (side) => (state.teams.cell.side === side ? 'cell' : 'watch'),
+    plan: { attack: null, executing: false, execAt: 0, rotated: false, lastPlan: '' }, // the attackers' call (ai/tactics.js)
+    intel: {                // the last enemy each team saw: where, when, and which site it points to
+      cell: { time: -99, x: 0, z: 0, site: null, spotted: 0 },
+      watch: { time: -99, x: 0, z: 0, site: null, spotted: 0 },
+    },
     kill: null,             // set by sim/round.js
   };
   let id = 0;

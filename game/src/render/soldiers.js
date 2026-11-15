@@ -80,7 +80,8 @@ function buildSoldier(actor, mats) {
   const armR = new THREE.Mesh(GEO.arm, mats.fatigue); armR.position.set(0.2, -0.02, 0); armR.rotation.y = 0.2; arms.add(armR);
   const gun = new THREE.Group(); gun.position.set(0.06, -0.02, -0.05); arms.add(gun);
   gun.add(new THREE.Mesh(GEO.gun, mats.gun), new THREE.Mesh(GEO.barrel, mats.gun), new THREE.Mesh(GEO.mag, mats.gun));
-  root.traverse((o) => { if (o.isMesh) { o.castShadow = true; } });
+  // Only the big pieces cast shadows: the silhouette reads the same at a fraction of the cost.
+  for (const part of [legL.children[0], legR.children[0], chest.children[0], chest.children[1], head.children[0]]) part.castShadow = true;
 
   let tag = null;
   if (!actor.isPlayer) {

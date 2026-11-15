@@ -6,7 +6,8 @@
 export function createInput(canvas, onLockChange) {
   const held = new Set();
   const pressed = new Set();
-  const mouse = { dx: 0, dy: 0, left: false, right: false, rightPressed: false };
+  // leftPressed latches a click until the next step, so a tap shorter than a frame still fires.
+  const mouse = { dx: 0, dy: 0, left: false, leftPressed: false, right: false, rightPressed: false };
   let locked = false;
   let fallback = false;
 
@@ -24,7 +25,7 @@ export function createInput(canvas, onLockChange) {
   });
   canvas.addEventListener('mousedown', (e) => {
     if (!locked && !fallback) return;
-    if (e.button === 0) mouse.left = true;
+    if (e.button === 0) { mouse.left = true; mouse.leftPressed = true; }
     if (e.button === 2) { mouse.right = true; mouse.rightPressed = true; }
   });
   window.addEventListener('mouseup', (e) => {
@@ -60,6 +61,6 @@ export function createInput(canvas, onLockChange) {
     },
     /** Takes this frame's mouse motion (and clears it). */
     takeLook(out) { out.dx = mouse.dx; out.dy = mouse.dy; mouse.dx = 0; mouse.dy = 0; return out; },
-    endStep() { pressed.clear(); mouse.rightPressed = false; },
+    endStep() { pressed.clear(); mouse.leftPressed = false; mouse.rightPressed = false; },
   };
 }

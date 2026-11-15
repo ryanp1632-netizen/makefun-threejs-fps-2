@@ -35,6 +35,7 @@ export function createRound(state, events, charge, grenades) {
     state.phaseTime = ROUND.freezeTime;
     state.clock = ROUND.roundTime;
     state.liveTime = 0;
+    state.roundStartTime = state.time;
     state.result = null;
     grenades.clear();
     const used = { atk: 0, def: 0 };

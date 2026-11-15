@@ -27,7 +27,7 @@ export function createBrain(bot, skill, seedOffset) {
   };
 }
 
-/** One fixed step of a bot. ctx = { state, events, grenades, intel, tactics, kill }. */
+/** One fixed step of a bot. ctx = { state, events, grenades, kill }. */
 export function stepBrain(bot, dt, ctx) {
   const b = bot.brain;
   b.thinkIn -= dt;
@@ -40,11 +40,11 @@ export function stepBrain(bot, dt, ctx) {
 
 // ---- Decisions (10 Hz) -----------------------------------------------------------------------
 function think(bot, ctx) {
-  const { state, grenades, intel, events } = ctx;
+  const { state, grenades, events } = ctx;
   const b = bot.brain, mem = b.memory;
   bot.flash = Math.max(0, bot.flash - AI.thinkInterval);
   if (state.phase === 'freeze' || state.phase === 'menu') { b.mode = 'frozen'; return; }
-  look(bot, state, grenades, intel, events);
+  look(bot, state, grenades, events);
 
   const w = activeWeapon(bot);
   if (mem.visible) {
@@ -96,11 +96,11 @@ function setPathTarget(b, x, z) {
 }
 
 function utilityGrenades(bot, ctx) {
-  const { state, tactics } = ctx;
+  const { state } = ctx;
   const b = bot.brain, mem = bot.brain.memory;
-  const plan = tactics.plans.attack;
+  const plan = state.plan.attack;
   const g = currentGoal(b);
-  if (plan && tactics.plans.executing && b.waiting === false && g && state.sideOf(bot) === 'atk') {
+  if (plan && state.plan.executing && b.waiting === false && g && state.sideOf(bot) === 'atk') {
     const throwerGoal = b.goals.find((q) => q.smoke || q.flash);
     if (throwerGoal?.smoke && !b.smoked && bot.grenades.smoke > 0) {
       b.smoked = true; lob(bot, 'smoke', plan.smoke, ctx);
@@ -186,9 +186,9 @@ function control(bot, dt, ctx) {
 }
 
 function onGoal(bot, g, ctx) {
-  const { state, tactics } = ctx;
+  const { state } = ctx;
   const b = bot.brain;
-  if (g.wait && !tactics.plans.executing) { b.waiting = true; return; }
+  if (g.wait && !state.plan.executing) { b.waiting = true; return; }
   switch (g.act) {
     case 'plant':
       if (bot.hasCharge && siteAt(bot.pos.x, bot.pos.z)) {

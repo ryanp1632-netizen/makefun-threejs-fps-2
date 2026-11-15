@@ -39,9 +39,11 @@ function tube(r, len, mat, x, y, z) {
 const BUILD = {
   wren(accent) {
     const g = new THREE.Group();
-    g.add(box(0.05, 0.06, 0.2, M.metal, 0, 0.03, -0.06));
-    g.add(box(0.045, 0.1, 0.06, M.polymer, 0, -0.04, 0.0));
-    g.add(box(0.052, 0.012, 0.16, accent, 0, 0.065, -0.06));
+    g.add(box(0.05, 0.06, 0.2, M.metal, 0, 0.03, -0.06));         // slide
+    g.add(box(0.045, 0.1, 0.06, M.polymer, 0, -0.04, 0.0));       // grip
+    g.add(box(0.012, 0.016, 0.012, M.metal, 0, 0.066, -0.15));    // front sight
+    g.add(box(0.03, 0.016, 0.012, M.metal, 0, 0.066, 0.03));      // rear sight
+    g.add(box(0.052, 0.008, 0.03, accent, 0, 0.03, -0.12));       // team band
     const mag = box(0.036, 0.07, 0.045, M.metal, 0, -0.1, 0.0); g.add(mag);
     return { group: g, muzzle: -0.17, mag };
   },
@@ -142,7 +144,7 @@ export function createViewmodel(width, height, tex) {
   const flashLight = new THREE.PointLight(0xffb060, 0, 3, 2);
   scene.add(flashLight);
 
-  const accent = new THREE.MeshStandardMaterial({ color: PALETTE.cell, emissive: PALETTE.cell, emissiveIntensity: 0.5 });
+  const accent = new THREE.MeshStandardMaterial({ color: PALETTE.cell, emissive: PALETTE.cell, emissiveIntensity: 0.2 });
   const rig = new THREE.Group();
   scene.add(rig);
   // Two gloved hands on sleeves: right on the grip, left forward on the handguard.

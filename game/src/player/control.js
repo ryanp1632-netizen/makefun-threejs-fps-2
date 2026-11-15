@@ -45,7 +45,7 @@ export function createControl(state, input, events) {
     wish.speed = maxSpeed(p, w?.def.speed ?? 1);
     if (state.phase === 'freeze') { wish.x = wish.z = 0; wish.jump = false; }
 
-    p.triggerHeld = input.mouse.left;
+    p.triggerHeld = input.mouse.left || input.mouse.leftPressed;
     p.wantUse = keys.has('KeyE');
     if (p.wantUse && p.hasCharge && p.active !== SLOT.CHARGE) equip(p, SLOT.CHARGE);
     if (input.mouse.rightPressed) toggleScope(p, events);
