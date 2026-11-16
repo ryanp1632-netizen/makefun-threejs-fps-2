@@ -107,13 +107,14 @@ const SCENES = {
     for (let i = 0; i < 200 && state.charge.phase !== 'planted'; i++) { isolde.wantUse = true; charge.update(1 / 60); }
     earlierKill(game, isolde, tamsin, 'halyard', true, 34.6, 3.4);
     earlierKill(game, holloway, me, 'vigil', false, 30.4, 9.6);
-    put(me, 32.8, 5.9);
+    put(me, 33.35, 4.35);
     me.kit = true; me.armor = 64; me.helmet = true; me.hp = 58; me.money = 1100;
     arm(me, 'halyard', 11);
-    put(tamsin, 30.8, 3.6, -0.9); arm(tamsin, 'halyard');
-    game.grenades.spawn('smoke', tamsin, cellX(36.2), 0.3, cellZ(3.2), 0, 0, 0);
+    put(tamsin, 30.2, 8.4, Math.PI); tamsin.crouching = true; tamsin.crouch = 1; arm(tamsin, 'halyard');
+    // The smoke walls off the east entrance the attackers would re-peek from.
+    game.grenades.spawn('smoke', tamsin, cellX(36.4), 0.3, cellZ(8.6), 0, 0, 0);
     me.crouching = true; me.crouch = 1;
-    me.yaw = -0.62; me.pitch = -0.3;
+    me.yaw = Math.PI - 0.16; me.pitch = -0.4;
     // The surviving attackers are smoked out of the fight (blinded) so the defuse runs uninterrupted.
     const holders = state.actors.filter((a) => a.alive && a.team === 'watch');
     for (let i = 0; i < 170; i++) {
@@ -125,23 +126,27 @@ const SCENES = {
     me.wantUse = true;
   },
 
-  // Round won: the scoreboard over the last seconds of round 8.
+  // Match point won: round 11, Lumen Cell (defending since halftime) wipe the attackers, the
+  // round rule takes the score to 7 and ends the match, and the final board carries the verdict.
   board(game) {
     const { state } = game;
-    state.round = 8; state.teams.cell.score = 4; state.teams.watch.score = 3;
+    state.teams.cell.side = 'def'; state.teams.watch.side = 'atk';
+    state.round = 11; state.teams.cell.score = 6; state.teams.watch.score = 4;
+    state.phase = 'live'; state.liveTime = 50; state.clock = 55;
     const me = state.player;
-    const tally = [[me, 14, 3, 6, 1510, 3], [find(state, 'Wick'), 9, 4, 7, 1140, 2], [find(state, 'Brannock'), 8, 2, 6, 990, 1],
-      [find(state, 'Sorrel'), 5, 6, 7, 760, 0], [find(state, 'Tamsin'), 4, 3, 8, 640, 0], [find(state, 'Craddock'), 12, 2, 7, 1360, 2],
-      [find(state, 'Holloway'), 9, 3, 7, 1080, 1], [find(state, 'Pell'), 6, 4, 8, 820, 0], [find(state, 'Isolde'), 5, 2, 8, 700, 0], [find(state, 'Marrow'), 3, 4, 9, 520, 0]];
-    const hsShare = [0.41, 0.33, 0.44, 0.2, 0.25, 0.5, 0.33, 0.17, 0.4, 0.33];
-    tally.forEach(([a, k, as, d, dmg, mvp], i) => Object.assign(a.stats, { kills: k, headshots: Math.round(k * hsShare[i]), assists: as, deaths: d, damage: dmg, mvps: mvp }));
-    state.phase = 'live'; state.liveTime = 50; state.clock = 38;
-    put(me, 6.2, 6.4, -2.3); arm(me, 'lancer', 17);
-    for (const name of ['Pell', 'Isolde', 'Marrow']) earlierKill(game, find(state, name), me, 'lancer', name !== 'Marrow', 7 + name.length * 0.4, 8 - name.length * 0.3);
+    put(me, 6.2, 6.4, -2.3); arm(me, 'halyard', 17);
+    for (const name of ['Pell', 'Isolde', 'Marrow']) earlierKill(game, find(state, name), me, 'halyard', name !== 'Marrow', 7 + name.length * 0.4, 8 - name.length * 0.3);
     earlierKill(game, find(state, 'Craddock'), find(state, 'Wick'), 'hornet', false, 9.5, 3.5);
-    earlierKill(game, find(state, 'Holloway'), find(state, 'Brannock'), 'lancer', true, 3.2, 9.1);
-    for (let i = 0; i < 60; i++) game.simulate(1 / 60, true);
+    earlierKill(game, find(state, 'Holloway'), find(state, 'Brannock'), 'halyard', true, 3.2, 9.1);
+    // The round's own rules end the round and then the match (endDelay later).
+    for (let i = 0; i < 60 * 6 && state.phase !== 'end'; i++) game.simulate(1 / 60, true);
+    const tally = [[me, 19, 4, 8, 2210, 4], [find(state, 'Wick'), 13, 5, 9, 1580, 2], [find(state, 'Brannock'), 11, 3, 8, 1340, 2],
+      [find(state, 'Sorrel'), 7, 8, 9, 1020, 1], [find(state, 'Tamsin'), 6, 4, 10, 870, 0], [find(state, 'Craddock'), 15, 2, 10, 1740, 2],
+      [find(state, 'Holloway'), 11, 4, 10, 1390, 2], [find(state, 'Pell'), 8, 5, 11, 1060, 0], [find(state, 'Isolde'), 6, 3, 11, 880, 0], [find(state, 'Marrow'), 4, 5, 12, 640, 0]];
+    const hsShare = [0.42, 0.31, 0.45, 0.29, 0.33, 0.47, 0.36, 0.25, 0.33, 0.25];
+    tally.forEach(([a, k, as, d, dmg, mvp], i) => Object.assign(a.stats, { kills: k, headshots: Math.round(k * hsShare[i]), assists: as, deaths: d, damage: dmg, mvps: mvp }));
     game.board.show();
+    game.showScreen(null);
   },
 };
 
