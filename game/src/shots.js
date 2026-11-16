@@ -2,6 +2,7 @@
 // of a match up through the game's own systems (round state, buying, kills, grenades, the
 // charge), then runs the real simulation for a few frames so shots, tracers and the bots' reactions
 // are genuine. Open index.html?shot=<name>&seed=1 to render one: firefight, buy, retake, board.
+// The committed images were rendered at device pixel ratio 2 (2560x1440) and scaled to 1280x720.
 import { cellX, cellZ } from './world/grid.js';
 import { eyeHeight } from './sim/mover.js';
 import { giveWeapon, equip } from './sim/combatant.js';
